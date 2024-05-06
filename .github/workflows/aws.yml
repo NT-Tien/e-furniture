@@ -1,0 +1,25 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4 
+      - name: Build & Deploy
+        env:
+            IP: ${{ secrets.SSH_IP }}
+            USER_NAME: ${{secrets.SSH_USERNAME}}
+            PORT: ${{secrets.SSH_PORT}}
+            PASS_WORD: ${{secrets.SSH_PASSWORD}}
+        run: |
+            sshpass -p $PASS_WORD ssh -o StrictHostKeyChecking=no -i private_key $USER_NAME@$IP -p $PORT '
+              cd swd-backend &&
+              git pull &&
+              docker-compose down &&
+              docker rmi swd-backend_backend:latest &&
+              docker-compose up --build -d
+              '
